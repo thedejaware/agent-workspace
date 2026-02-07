@@ -1,0 +1,1 @@
+/Users/mehmet.akin/Desktop/AgentWorkspace/clean-architecture.md

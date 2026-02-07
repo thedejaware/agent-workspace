@@ -1,0 +1,1 @@
+/Users/mehmet.akin/Desktop/AgentWorkspace/domain-driven-design.md
