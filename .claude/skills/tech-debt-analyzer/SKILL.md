@@ -1,39 +1,52 @@
 ---
 name: tech-debt-analyzer
-description: This skill should be used when analyzing technical debt in a codebase, documenting code quality issues, creating technical debt registers, or assessing code maintainability. Use this for identifying code smells, architectural issues, dependency problems, missing documentation, security vulnerabilities, and creating comprehensive technical debt documentation.
+description: This skill should be used when analyzing technical debt in a codebase, documenting code quality issues, creating technical debt registers, or assessing code maintainability. Use this for identifying code smells, architectural issues, dependency problems, missing documentation, security vulnerabilities, and creating comprehensive technical debt documentation. Supports .NET/C#, JavaScript, TypeScript, and Golang projects.
 ---
 
 # Technical Debt Analyzer
 
 ## Overview
 
-Systematically identify, analyze, document, and track technical debt in .NET/C# codebases. This skill provides automated analysis tools, comprehensive debt categorization frameworks, and documentation templates to maintain a technical debt register.
+Systematically identify, analyze, document, and track technical debt across multiple languages and platforms. This skill provides automated analysis tools, comprehensive debt categorization frameworks, and documentation templates to maintain a technical debt register.
+
+**Supported Languages:**
+- .NET/C#
+- JavaScript
+- TypeScript
+- Golang
+
+For language-specific guidance, see the reference files in `references/` directory.
 
 ## Core Workflow
 
 ### 1. Automated Analysis
 
-Run automated scripts to detect technical debt indicators across the codebase.
+Run automated scripts or language-specific tools to detect technical debt indicators across the codebase.
 
 #### Code Smell Detection
 
-Identify code quality issues using the automated detector:
-
+**For .NET/C#:**
 ```bash
 python3 scripts/detect_code_smells.py src --output markdown
 ```
 
-The script analyzes:
-- **Large Files:** Files exceeding 500 lines
-- **Complex Methods:** High cyclomatic complexity (>10) or long methods (>50 lines)
+**For JavaScript/TypeScript/Golang:**
+Use language-specific linting and analysis tools. See language-specific references for detailed tool recommendations:
+- JavaScript: `references/javascript.md`
+- TypeScript: `references/typescript.md`
+- Golang: `references/golang.md`
+
+The analysis typically covers:
+- **Large Files:** Files exceeding recommended line limits
+- **Complex Methods:** High cyclomatic complexity or long functions
 - **Debt Markers:** TODO, FIXME, HACK, XXX, BUG comments
-- **Debug Statements:** Console.WriteLine, Debug statements left in code
-- **Weak Typing:** Use of `dynamic` type or excessive `object` casting
-- **Long Parameters:** Methods with >5 parameters
-- **Deep Nesting:** Code nested >4 levels deep
+- **Debug Statements:** Console/debug statements left in code
+- **Weak Typing:** Type safety issues (language-specific)
+- **Long Parameters:** Functions with too many parameters
+- **Deep Nesting:** Deeply nested code blocks
 - **Magic Numbers:** Hardcoded numeric values
-- **Exception Handling:** Empty catch blocks, catching generic Exception
-- **Nullability Issues:** Potential null reference issues
+- **Error Handling:** Poor exception/error handling patterns
+- **Best Practice Violations:** Language-specific anti-patterns
 
 **Output Example:**
 ```
@@ -57,19 +70,37 @@ The script analyzes:
 
 #### Dependency Analysis
 
-Examine dependencies for debt indicators:
+Examine dependencies for debt indicators using language-specific tools:
 
+**For .NET/C#:**
 ```bash
 python3 scripts/analyze_dependencies.py MyProject.csproj
+# Or use built-in .NET tools:
+dotnet list package --outdated
+dotnet list package --vulnerable
 ```
 
-The script identifies:
-- **Deprecated Packages:** Known deprecated NuGet packages
+**For JavaScript/TypeScript:**
+```bash
+npm audit
+npm outdated
+# Or use tools like depcheck, npm-check-updates
+```
+
+**For Golang:**
+```bash
+go list -u -m all
+go mod tidy
+govulncheck ./...
+```
+
+The analysis identifies:
+- **Deprecated Packages:** Known deprecated dependencies
 - **Outdated Packages:** Packages with newer versions available
 - **Duplicate Functionality:** Multiple packages serving same purpose
 - **Version Issues:** Overly loose or strict version constraints
 - **Security Concerns:** Known vulnerable packages
-- **Framework Targeting:** Old .NET Framework versions or multi-targeting issues
+- **Framework/Runtime Issues:** Outdated language versions or runtime targets
 
 **Output Example:**
 ```
@@ -305,30 +336,51 @@ Before approving PRs, verify:
 
 #### Automated Prevention
 
-**Code Analysis Rules (.editorconfig, Directory.Build.props, or .globalconfig):**
+Configure language-specific code analysis and quality tools:
+
+**For .NET/C# (Directory.Build.props or .globalconfig):**
 ```xml
-<!-- Enable code analysis in Directory.Build.props -->
 <PropertyGroup>
   <EnableNETAnalyzers>true</EnableNETAnalyzers>
   <AnalysisLevel>latest</AnalysisLevel>
   <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   <Nullable>enable</Nullable>
 </PropertyGroup>
-
-<!-- Add analyzers -->
 <ItemGroup>
   <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" />
   <PackageReference Include="SonarAnalyzer.CSharp" Version="9.10.0.77988" />
 </ItemGroup>
 ```
 
-**Required Checks:**
-- Nullable reference types enabled
-- .NET Code Analyzers enabled (Roslyn)
+**For JavaScript/TypeScript (ESLint, Prettier):**
+```json
+{
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "rules": {
+    "complexity": ["error", 10],
+    "max-lines": ["error", 500],
+    "max-params": ["error", 5]
+  }
+}
+```
+
+**For Golang (golangci-lint):**
+```yaml
+linters:
+  enable:
+    - gocyclo
+    - gofmt
+    - govet
+    - staticcheck
+    - gosec
+```
+
+**Required Checks (Language-Agnostic):**
+- Code linting enabled
 - Minimum test coverage threshold (80%)
 - No high-severity security vulnerabilities
-- StyleCop or EditorConfig for code style
-- SonarQube/SonarLint integration
+- Code style consistency enforced
+- Static analysis integration (SonarQube/SonarLint)
 
 #### Regular Maintenance
 
@@ -337,16 +389,19 @@ Before approving PRs, verify:
 - Update debt register with new findings
 
 **Monthly:**
-- NuGet dependency updates (security patches via `dotnet list package --vulnerable`)
+- Dependency security updates
+  - .NET: `dotnet list package --vulnerable`
+  - JavaScript/TypeScript: `npm audit` or `yarn audit`
+  - Golang: `govulncheck ./...`
 - Debt register review
 - Plan fixes for high-priority items
-- Review .NET SDK and runtime versions
+- Review language/runtime versions
 
 **Quarterly:**
 - Full codebase debt analysis
 - Architecture review
-- Major NuGet dependency updates
-- .NET Framework/SDK version updates (e.g., .NET 6 → 7 → 8)
+- Major dependency updates
+- Language/framework version updates
 - Trend analysis and strategy adjustment
 
 ## Decision Tree
@@ -441,6 +496,21 @@ Comprehensive guide to technical debt types with:
 - Assessing severity and impact
 - Understanding root causes
 - Planning prevention strategies
+
+### Language-Specific References
+
+For language-specific guidance on tools, patterns, and best practices:
+
+- **dotnet.md** - .NET/C# specific debt patterns, tools, and recommendations
+- **javascript.md** - JavaScript specific debt patterns, tools, and recommendations
+- **typescript.md** - TypeScript specific debt patterns, tools, and recommendations
+- **golang.md** - Golang specific debt patterns, tools, and recommendations
+
+**Load language-specific references when:**
+- Analyzing a specific language codebase
+- Need tool recommendations for a language
+- Understanding language-specific anti-patterns
+- Configuring automated analysis for a language
 
 ## Documentation Templates
 
