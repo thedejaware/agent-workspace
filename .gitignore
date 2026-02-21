@@ -1,6 +1,9 @@
 # Claude Code local settings (user-specific, should not be committed)
 .claude/settings.local.json
 
+# Customr
+PRDs/
+
 # Node modules
 node_modules/
 
